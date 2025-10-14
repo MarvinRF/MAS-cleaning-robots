@@ -1,0 +1,23 @@
+/* Mars World - Enhanced Multi-Agent System
+   
+   Features:
+   - Dynamic priority system (garbage vs gold)
+   - Q-learning for intelligent navigation
+   - Visual feedback with statistics
+   - Supervisor coordination
+   - Safety checks (never burn gold)
+*/
+
+MAS mars_enhanced {
+
+    infrastructure: Centralised
+
+    environment: MarsEnv
+
+    agents:
+        r1;
+        r2;
+        supervisor;
+
+    aslSourcePath: "src/asl";
+}
