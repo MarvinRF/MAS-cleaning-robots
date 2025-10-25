@@ -1,4 +1,4 @@
-// R2 - Processador Simples
+// R2 - Processador
 // Queima lixo, guarda ouro
 
 /* Crenças iniciais */

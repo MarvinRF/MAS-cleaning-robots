@@ -1,4 +1,4 @@
-// R1 - Coletor Simples
+// R1 - Coletor
 // Coleta tudo e envia relatório final
 
 /* Crenças iniciais */

@@ -1,4 +1,4 @@
-// Supervisor Inteligente - Versão Ultra-Simples
+// Supervisor Inteligente
 // Recebe apenas relatório final do R1
 
 /* Crenças iniciais */
