@@ -1,26 +1,28 @@
-// R1 - Coletor Inteligente com Navegação Otimizada
-// Prioriza garbage, depois gold, entrega tudo ao R2
+// R1 - Coletor Simples
+// Coleta tudo e envia relatório final
 
 /* Crenças iniciais */
 at(P) :- pos(P,X,Y) & pos(r1,X,Y).
 mission_started(false).
+garbage_collected(0).
+gold_collected(0).
 
 /* Objetivo inicial */
 !wait_for_map.
 
 /* Planos */
 
-// AGUARDAR MAPA DO SUPERVISOR
+// AGUARDAR MAPA
 +!wait_for_map : mission_started(true)
-   <- .print("[R1] Missão já iniciada, ignorando loop").
+   <- .print("[R1] Missão já iniciada").
 
 +!wait_for_map : not mission_started(true)
    <- .wait(500);
       !wait_for_map.
 
-// RECEBER MAPA E INICIAR COLETA
+// RECEBER MAPA
 +resource_map(GarbList, GoldList)[source(supervisor)] : not mission_started(true)
-   <- .print("[R1] Mapa recebido do supervisor!");
+   <- .print("[R1] Mapa recebido!");
       -+mission_started(true);
       -+garbage_locations(GarbList);
       -+gold_locations(GoldList);
@@ -29,142 +31,99 @@ mission_started(false).
       .print("[R1] Detectado: ", GCount, " lixo(s) e ", AuCount, " ouro(s)");
       !start_collection.
 
-// INICIAR PROCESSO DE COLETA
+// INICIAR COLETA
 +!start_collection
-   <- .print("[R1] Iniciando coleta inteligente...");
+   <- .print("[R1] === INICIANDO COLETA ===");
       !collect_all_garbage;
       !collect_all_gold;
-      !mission_complete.
+      !send_final_report.
 
-// ========== FASE 1: COLETA DE LIXO ==========
+// ========== COLETAR LIXO ==========
 
 +!collect_all_garbage
-   <- .print("[R1] === FASE 1: COLETA DE LIXO ===");
+   <- .print("[R1] FASE 1: Coletando lixo...");
       ?garbage_locations(GList);
-      if (.empty(GList)) {
-         .print("[R1] Nenhum lixo encontrado no mapa")
-      } else {
-         !process_garbage_list(GList)
-      }.
+      !process_garbage_list(GList).
 
 +!process_garbage_list([])
-   <- .print("[R1] Todo lixo foi coletado!").
+   <- .print("[R1] Todo lixo processado!").
 
 +!process_garbage_list([garbage(X,Y)|Rest])
-   <- .print("[R1] Próximo alvo: lixo em (", X, ",", Y, ")");
-      !collect_garbage_at(X, Y);
+   <- .print("[R1] Indo para lixo em (", X, ",", Y, ")");
+      !move_to(X, Y);
+      !ensure_pick(garb);
+      !deliver_to_r2;
+      ?garbage_collected(C);
+      -+garbage_collected(C+1);
+      .print("[R1] Lixo #", C+1, " entregue!");
       !process_garbage_list(Rest).
 
-// COLETAR LIXO EM POSIÇÃO ESPECÍFICA
-+!collect_garbage_at(X, Y)
-   <- .print("[R1] Indo para (", X, ",", Y, ")...");
-      !move_to(X, Y);
-      
-      .print("[R1] Chegou ao lixo, tentando coletar...");
-      !ensure_pick(garb);
-      
-      .print("[R1] Lixo coletado! Levando para R2...");
-      !deliver_garbage_to_r2;
-      
-      .print("[R1] Lixo entregue ao incinerador!");
-      .send(supervisor, tell, collection_done);
-      .wait(100);  // ⭐ AGUARDA PROCESSAMENTO
-      .print("[R1] Próximo alvo...").
-
-// ENTREGAR LIXO AO INCINERADOR R2
-+!deliver_garbage_to_r2
-   <- ?pos(r2, BX, BY);
-      .print("[R1] Movendo para incinerador em (", BX, ",", BY, ")");
-      !move_to(BX, BY);
-      
-      .print("[R1] Descartando lixo...");
-      drop(garb);
-      .wait(500). // Aguarda R2 queimar
-
-// ========== FASE 2: COLETA DE OURO ==========
+// ========== COLETAR OURO ==========
 
 +!collect_all_gold
-   <- .print("[R1] === FASE 2: COLETA DE OURO ===");
+   <- .print("[R1] FASE 2: Coletando ouro...");
       ?gold_locations(AuList);
-      if (.empty(AuList)) {
-         .print("[R1] Nenhum ouro encontrado no mapa")
-      } else {
-         !process_gold_list(AuList)
-      }.
+      !process_gold_list(AuList).
 
 +!process_gold_list([])
-   <- .print("[R1] Todo ouro foi coletado!").
+   <- .print("[R1] Todo ouro processado!").
 
 +!process_gold_list([gold(X,Y)|Rest])
-   <- .print("[R1] Próximo alvo: ouro em (", X, ",", Y, ")");
-      !collect_gold_at(X, Y);
+   <- .print("[R1] Indo para ouro em (", X, ",", Y, ")");
+      !move_to(X, Y);
+      !ensure_pick(gold);
+      !deliver_to_r2;
+      ?gold_collected(G);
+      -+gold_collected(G+1);
+      .print("[R1] Ouro #", G+1, " entregue!");
       !process_gold_list(Rest).
 
-// COLETAR OURO EM POSIÇÃO ESPECÍFICA
-+!collect_gold_at(X, Y)
-   <- .print("[R1] Indo para (", X, ",", Y, ")...");
-      !move_to(X, Y);
-      
-      .print("[R1] Chegou ao ouro, coletando...");
-      !ensure_pick(gold);
-      
-      .print("[R1] Ouro coletado! Levando para R2 armazenar...");
-      !deliver_gold_to_r2.
+// ========== ENTREGAR PARA R2 ==========
 
-// ⭐ ENTREGAR OURO PARA R2 ARMAZENAR
-+!deliver_gold_to_r2
-   <- ?pos(r2, R2X, R2Y);
-      .print("[R1] Movendo para R2 em (", R2X, ",", R2Y, ")");
-      !move_to(R2X, R2Y);
-      
-      .print("[R1] Entregando ouro para armazenamento seguro...");
++!deliver_to_r2
+   <- ?pos(r2, BX, BY);
+      !move_to(BX, BY);
+      drop(garb);
       drop(gold);
-      .wait(500); // Aguarda R2 processar
-      .print("[R1] Ouro entregue ao R2!").
+      .wait(500).
 
-// ========== MISSÃO COMPLETA ==========
+// ========== RELATÓRIO FINAL ==========
 
-+!mission_complete
-   <- .print("[R1] ==============================");
-      .print("[R1] === MISSÃO CONCLUÍDA ===");
-      .print("[R1] Grid completamente limpo!");
-      .print("[R1] Sistema entrando em modo de repouso...");
++!send_final_report
+   <- ?garbage_collected(GC);
+      ?gold_collected(AC);
       .print("[R1] ==============================");
-      .send(supervisor, tell, all_clear);
-      -+mission_started(complete);
+      .print("[R1] === MISSÃO CONCLUÍDA ===");
+      .print("[R1] Lixo coletado: ", GC);
+      .print("[R1] Ouro coletado: ", AC);
+      .print("[R1] ==============================");
+      .send(supervisor, tell, mission_report(GC, AC));
       !standby.
 
-+!standby : mission_started(complete)
++!standby
    <- .wait(60000);
       !standby.
 
 // ========== UTILITÁRIOS ==========
 
-// COLETA COM RETRY (lida com probabilidade de falha)
 +!ensure_pick(garb) : garbage(r1)
    <- pick(garb);
       !ensure_pick(garb).
 
 +!ensure_pick(garb) : not garbage(r1)
-   <- .print("[R1] Lixo coletado com sucesso!").
+   <- true.
 
 +!ensure_pick(gold) : gold(r1)
    <- pick(gold);
       !ensure_pick(gold).
 
 +!ensure_pick(gold) : not gold(r1)
-   <- .print("[R1] Ouro coletado com sucesso!").
+   <- true.
 
-// NAVEGAÇÃO INTELIGENTE
 +!move_to(X, Y) : pos(r1, X, Y)
-   <- .print("[R1] Já está no destino (", X, ",", Y, ")").
+   <- true.
 
 +!move_to(X, Y) : not pos(r1, X, Y)
    <- move_towards(X, Y);
       .wait(300);
-      ?pos(r1, CX, CY);
-      if (CX == X & CY == Y) {
-         .print("[R1] Chegou em (", X, ",", Y, ")")
-      } else {
-         !move_to(X, Y)
-      }.
+      !move_to(X, Y).
