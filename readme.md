@@ -465,8 +465,8 @@ _Repete para cada ouro..._
 
 ### Software Necessário
 
-- **Java JDK**: 8 ou superior
-- **Jason Framework**: 2.6 ou superior
+- **Java JDK**: 21
+- **Jason Framework**: Jason CLI 3.3.0
 - **IDE Recomendada**: Eclipse, IntelliJ IDEA, ou VS Code com extensão Jason
 
 ### Dependências
