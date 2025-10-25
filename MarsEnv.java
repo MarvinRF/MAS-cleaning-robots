@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class MarsEnv extends Environment {
 
-    // ⭐ GRID AUMENTADO PARA 8x8
+    // GRID 8x8
     public static final int GSize = 8;
     public static final int GARB  = 16;
     public static final int GOLD  = 32;
