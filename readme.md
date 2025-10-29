@@ -44,7 +44,7 @@ O **Mars Cleanup System** é um sistema multi-agente desenvolvido em **Jason (Ag
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      MARS CLEANUP SYSTEM                     │
+│                      MARS CLEANUP SYSTEM                    │
 └─────────────────────────────────────────────────────────────┘
                               │
                     ┌─────────┴─────────┐
@@ -283,19 +283,19 @@ at(P) :- pos(P,X,Y) & pos(r2,X,Y)  // Posição fixa em (3,3)
        │ 2. Mapa de Recursos │                     │
        │────────────────────►│                     │
        │                     │                     │
-       │                     │ 3. Coleta Lixo #1  │
+       │                     │ 3. Coleta Lixo #1   │
        │                     │────────────────────►│
        │                     │                     │
        │                     │                     │ 4. Queima
        │                     │                     │────────►
        │                     │                     │
-       │                     │ 5. Coleta Lixo #2  │
+       │                     │ 5. Coleta Lixo #2   │
        │                     │────────────────────►│
        │                     │                     │
        │                     │                     │ 6. Queima
        │                     │                     │────────►
        │                     │                     │
-       │                     │ 7. Coleta Ouro #1  │
+       │                     │ 7. Coleta Ouro #1   │
        │                     │────────────────────►│
        │                     │                     │
        │                     │                     │ 8. Armazena
